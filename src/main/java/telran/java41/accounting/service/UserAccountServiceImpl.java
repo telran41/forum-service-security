@@ -1,10 +1,10 @@
 package telran.java41.accounting.service;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.AllArgsConstructor;
 import telran.java41.accounting.dao.UserAccountRepository;
 import telran.java41.accounting.dto.RolesResponseDto;
 import telran.java41.accounting.dto.UserAccountResponseDto;
@@ -15,15 +15,11 @@ import telran.java41.accounting.dto.exceptions.UserNotFoundException;
 import telran.java41.accounting.model.UserAccount;
 
 @Service
+@AllArgsConstructor
 public class UserAccountServiceImpl implements UserAccountService {
 	UserAccountRepository repository;
 	ModelMapper modelMapper;
-
-	@Autowired
-	public UserAccountServiceImpl(UserAccountRepository repository, ModelMapper modelMapper) {
-		this.repository = repository;
-		this.modelMapper = modelMapper;
-	}
+	PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserAccountResponseDto addUser(UserRegisterDto userRegisterDto) {
@@ -31,7 +27,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 			throw new UserExistsException(userRegisterDto.getLogin());
 		}
 		UserAccount userAccount = modelMapper.map(userRegisterDto, UserAccount.class);
-		String password = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt());
+		String password = passwordEncoder.encode(userRegisterDto.getPassword());
 		userAccount.setPassword(password);
 		repository.save(userAccount);
 		return modelMapper.map(userAccount, UserAccountResponseDto.class);
@@ -81,7 +77,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public void changePassword(String login, String newPassword) {
 		UserAccount userAccount = repository.findById(login).orElseThrow(() -> new UserNotFoundException());
-		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+		String password = passwordEncoder.encode(newPassword);
 		userAccount.setPassword(password);
 		repository.save(userAccount);
 	}

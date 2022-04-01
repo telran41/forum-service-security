@@ -3,6 +3,7 @@ package telran.java41.accounting.controller;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,11 +41,13 @@ public class UserAccountController {
 	}
 
 	@DeleteMapping("/user/{login}")
+//	@PreAuthorize("#login == authentication.name or hasRole('ADMINISTRATOR')")
 	public UserAccountResponseDto removeUser(@PathVariable String login) {
 		return accountService.removeUser(login);
 	}
 
 	@PutMapping("/user/{login}")
+//	@PreAuthorize("#login == authentication.name")
 	public UserAccountResponseDto updateUser(@PathVariable String login, @RequestBody UserUpdateDto userUpdateDto) {
 		return accountService.editUser(login, userUpdateDto);
 	}
